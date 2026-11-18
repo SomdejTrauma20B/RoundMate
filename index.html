@@ -1,50 +1,70 @@
-<script>
-const API_URL = "https://script.google.com/macros/s/AKfycbxL7zQsfPbjBiYkSClRhZMhyZZrZBABoXKr5nITyrhjDHRZ0wexsFPM9LxTkpvblEvB/exec";
-const ICD_CHECKLIST_URL = "https://roundmate20b.softr.app/checklisticd";
-const WARD = "หอผู้ป่วยสามัญศัลยกรรมอุบัติเหตุชาย 20B";
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I-SITDOWN RoundMate 20B</title>
+    <!-- ใส่สไตล์ CSS หรือ Tailwind ตามที่โปรเจกต์เดิมใช้งาน -->
+    <style>
+        body { font-family: sans-serif; background: #f8fafc; margin: 0; padding: 20px; }
+        .state-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); max-width: 400px; margin: 40px auto; text-align: center; }
+    </style>
+</head>
+<body>
+    <!-- จุดแสดงผลหลักของแอป -->
+    <div id="app">
+        <div class="state-card">
+            <h3>กำลังโหลดข้อมูล...</h3>
+            <p>กรุณารอสักครู่ ระบบกำลังดึงข้อมูลจากฐานข้อมูล</p>
+        </div>
+    </div>
 
-// [วางฟังก์ชันการทำงานทั้งหมดเหมือนเดิม แต่เปลี่ยนจุดเรียกข้อมูลด้านล่างสุดเป็นแบบ Fetch API]
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbxL7zQsFpBjBiYKSc1RmHyZzRZiABoXKr5nITyrhjDHRZ0wexsFPM9LxTkpvblEvB/exec";
+        const ICD_CHECKLIST_URL = "https://roundmate20b.softr.app/checklisticd";
+        const WARD = "หอผู้ป่วยสามัญศัลยกรรมอุบัติเหตุชาย 20B";
 
-function fetchInitialData() {
-  fetch(API_URL)
-    .then(res => res.json())
-    .then(data => {
-      config = data; shiftInfo = data.shift; rawDepartments = data.departments;
-      try {
-        adminMode = localStorage.getItem("isitdown_admin_mode") || "single";
-        activeTeam = localStorage.getItem("isitdown_active_team") || "team1";
-        const single = localStorage.getItem("isitdown_single_depts");
-        const t1 = localStorage.getItem("isitdown_team1_depts");
-        const t2 = localStorage.getItem("isitdown_team2_depts");
-        if (single) singleTeamDepts = JSON.parse(single);
-        if (t1) team1Depts = JSON.parse(t1);
-        if (t2) team2Depts = JSON.parse(t2);
-      } catch {}
-      updateDepartmentsFilter();
-      loadDraft();
-      try { nurse = localStorage.getItem("isitdown_selected_nurse") || ""; } catch {}
-      if (nurse && !config.staff.includes(nurse)) nurse = "";
-      const rd = departments.find(d => d.name === draft.dept);
-      if (rd && rd.beds.includes(draft.bed)) loadBed(rd.name, draft.bed);
-      else render();
-    })
-    .catch(err => {
-      document.getElementById("app").innerHTML =
-        `<div class="state-card"><h3>โหลดข้อมูลไม่สำเร็จ</h3><p>${esc(err.message || err)}</p></div>`;
-    });
-}
+        function fetchInitialData() {
+            fetch(API_URL)
+                .then(res => res.json())
+                .then(data => {
+                    config = data; shiftInfo = data.shift; rawDepartments = data.departments;
+                    try {
+                        adminMode = localStorage.getItem("isitdown_admin_mode") || "single";
+                        activeTeam = localStorage.getItem("isitdown_active_team") || "team1";
+                        const single = localStorage.getItem("isitdown_single_depts");
+                        const t1 = localStorage.getItem("isitdown_team1_depts");
+                        const t2 = localStorage.getItem("isitdown_team2_depts");
+                        if (single) singleTeamDepts = JSON.parse(single);
+                        if (t1) team1Depts = JSON.parse(t1);
+                        if (t2) team2Depts = JSON.parse(t2);
+                    } catch {}
+                    updateDepartmentsFilter();
+                    loadDraft();
+                    try { nurse = localStorage.getItem("isitdown_selected_nurse") || ""; } catch {}
+                    if (nurse && !config.staff.includes(nurse)) nurse = "";
+                    const rd = departments.find(d => d.name === draft.dept);
+                    if (rd && rd.beds.includes(draft.bed)) loadBed(rd.name, draft.bed);
+                    else render();
+                })
+                .catch(err => {
+                    document.getElementById("app").innerHTML = 
+                        `<div class="state-card"><h3>โหลดข้อมูลไม่สำเร็จ</h3><p>${(err.message || err)}</p></div>`;
+                });
+        }
 
-// แทนที่ google.script.run ตอนกดบันทึก (confirmFinish) ด้วย fetch แบบนี้:
-function executeServerSave(payload, successCb, failCb) {
-  fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify(payload)
-  })
-  .then(res => res.json())
-  .then(res => successCb(res))
-  .catch(err => failCb(err));
-}
+        function executeServerSave(payload, successCb, failCb) {
+            fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(res => successCb(res))
+            .catch(err => failCb(err));
+        }
 
-// เริ่มต้นโหลด
-fetchInitialData();
-</script>
+        // เริ่มต้นโหลด
+        fetchInitialData();
+    </script>
+</body>
+</html>
